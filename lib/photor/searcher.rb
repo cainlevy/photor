@@ -9,9 +9,8 @@ module Photor
       options[:tags] = options[:tags].map(&:downcase)
 
       Photor.each_jpeg(@source) do |jpg|
-        next unless jpg.exif['Keywords']
-        matches = options[:tags] & jpg.exif['Keywords'].map(&:downcase)
-        next if matches.empty?
+        exif_tags = Array(jpg.exif['Keywords'] || jpg.exif['Subject']).map(&:downcase)
+        next if (options[:tags] & exif_tags).empty?
 
         puts jpg.path
       end
