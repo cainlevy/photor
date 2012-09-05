@@ -16,6 +16,10 @@ module Photor
       self.class.exif_time(@data['DateTimeOriginal'])
     end
 
+    def [](name)
+      @data[name]
+    end
+
     def method_missing(name, *args)
       if @data.key? name
         # if we need it once, we'll likely need it again.
