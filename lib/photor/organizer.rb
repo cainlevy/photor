@@ -7,32 +7,31 @@ module Photor
 
     def run(options = {})
       puts "scanning:"
-      Dir.glob(File.join(@source, '**', '*.{jpg,jpeg,JPG,JPEG}')).each do |o_path|
+      Photor.each_jpeg(@source) do |jpg|
         print "."
 
-        jpg = Photor::JPEG.new(o_path)
-        t_path = File.join(@destination, jpg.to_path)
+        d_path = File.join(@destination, jpg.to_path)
 
-        if File.exists? t_path
-          existing = Photor::JPEG.new(t_path)
+        if File.exists? d_path
+          existing = Photor::JPEG.new(d_path)
           if jpg == existing
-            puts "#{t_path} exists" if options[:dry_run]
+            puts "#{d_path} exists" if options[:dry_run]
             next
           else
             i = 0
-            while File.exists? t_path
+            while File.exists? d_path
               i += 1
-              t_path = t_path.sub(/\.([a-z]*$)/, ".#{i}.\\1")
+              d_path = d_path.sub(/\.([a-z]*$)/, ".#{i}.\\1")
             end
           end
         end
 
         if options[:dry_run]
-          puts "mkdir -p #{File.dirname(t_path)}"
-          puts "cp #{o_path} #{t_path}"
+          puts "mkdir -p #{File.dirname(d_path)}"
+          puts "cp #{jpg.path} #{d_path}"
         else
-          FileUtils.mkdir_p(File.dirname(t_path))
-          FileUtils.cp o_path, t_path
+          FileUtils.mkdir_p(File.dirname(d_path))
+          FileUtils.cp jpg.path, d_path
         end
       end
       puts "\n"

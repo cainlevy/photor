@@ -1,21 +1,12 @@
 #!/usr/bin/env ruby
 
-# ruby stdlib
-require 'optparse'
-require 'fileutils'
-require 'digest'
-require 'rubygems'
+require_relative '../lib/photor'
 
-# this lib
-$: << File.join(File.dirname(__FILE__), 'lib')
-require 'photor/photo'
-require 'photor/jpeg'
-require 'photor/exif'
-require 'photor/organizer'
+require 'optparse'
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: photor.rb --organize <source directory> <destination directory>"
+  opts.banner = "Usage: photor.rb [options] --ACTION $arg1 ..."
 
   opts.on '-o', '--organize', 'Organize from <source> to <destination>' do
     unless ARGV[0]
