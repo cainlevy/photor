@@ -9,7 +9,7 @@ end
 module Photor
   class Exif
     def initialize(path)
-      @data = JSON.parse(`exiftool #{path} -json`).first
+      @data = JSON.parse(`exiftool "#{path.gsub(/"/, '\\"')}" -json`).first
     end
 
     def date_time
