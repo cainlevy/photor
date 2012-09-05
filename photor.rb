@@ -7,6 +7,7 @@ require 'rubygems'
 $: << File.join(File.dirname(__FILE__), 'lib')
 require 'photor/photo'
 require 'photor/jpeg'
+require 'photor/exif'
 
 unless origin = ARGV[0]
   puts "please specify the origin directory"
