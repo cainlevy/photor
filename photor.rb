@@ -1,48 +1,48 @@
 #!/usr/bin/env ruby
 
+# ruby stdlib
+require 'optparse'
 require 'fileutils'
 require 'digest'
 require 'rubygems'
 
+# this lib
 $: << File.join(File.dirname(__FILE__), 'lib')
 require 'photor/photo'
 require 'photor/jpeg'
 require 'photor/exif'
+require 'photor/organizer'
 
-unless origin = ARGV[0]
-  puts "please specify the origin directory"
-  exit
-end
-target = ARGV[1] || "~/Pictures"
-dryrun = true
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: photor.rb --organize <source directory> <destination directory>"
 
-puts "scanning:"
-Dir.glob(File.join(origin, '**', '*.{jpg,jpeg,JPG,JPEG}')).each do |o_path|
-  print "."
-
-  jpg = Photor::JPEG.new(o_path)
-  t_path = File.join(target, jpg.to_path)
-
-  if File.exists? t_path
-    existing = Photor::JPEG.new(t_path)
-    if jpg == existing
-      puts "#{t_path} exists" if dryrun
-      next
-    else
-      i = 0
-      while File.exists? t_path
-        i += 1
-        t_path = t_path.sub(/\.([a-z]*$)/, ".#{i}.\\1")
-      end
+  opts.on '-o', '--organize', 'Organize from <source> to <destination>' do
+    unless ARGV[0]
+      puts "please specify the source directory"
+      exit
     end
+    unless ARGV[1]
+      puts "please specify the destination directory"
+      exit
+    end
+
+    options[:action] = Photor::Organizer.new(ARGV[0], ARGV[1])
   end
 
-  if dryrun
-    puts "mkdir -p #{File.dirname(t_path)}"
-    puts "cp #{o_path} #{t_path}"
-  else
-    FileUtils.mkdir_p(File.dirname(t_path))
-    FileUtils.cp o_path, t_path
+  options[:dry_run] = false
+  opts.on '-d', '--dry-run', "Print actions instead of running them" do
+    options[:dry_run] = true
   end
+
+  opts.on '-h', '--help', 'Display this help' do
+    puts opts
+    exit
+  end
+end.parse!
+
+if options[:action]
+  options[:action].run(options)
+else
+  puts "please specify an action"
 end
-puts "\n"
