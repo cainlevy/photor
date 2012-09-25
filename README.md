@@ -6,8 +6,15 @@ a collected directory of your choosing (e.g. a [NAS](http://www.amazon.com/D-Lin
 
 Intended to support as many platforms and sources as I need.
 
+Requirements
+============
+
+* Ruby 1.9
+* Bundler (or the gems specified in Gemfile)
+
 Usage
 =====
 
-1. `gem install exifr`
-2. `./photor <source> <destination>`
+The available actions are explained from:
+
+  `./bin/photor.rb`
