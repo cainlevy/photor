@@ -6,8 +6,6 @@ require_relative 'photor/jpeg'
 require_relative 'photor/exif'
 
 require_relative 'photor/cli'
-require_relative 'photor/organizer'
-require_relative 'photor/searcher'
 
 module Photor
   def self.each_jpeg(dir, &block)

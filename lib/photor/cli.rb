@@ -12,7 +12,35 @@ module Photor
     DESC
     method_option :dry_run, :type => :boolean, :desc => "report actions that would be taken without performing them"
     def import(source, destination)
-      Photor::Organizer.new(source, destination).run(:dry_run => options[:dry_run])
+      puts "scanning:"
+      Photor.each_jpeg(source) do |jpg|
+        print "."
+
+        d_path = File.join(destination, jpg.to_path)
+
+        if File.exists? d_path
+          existing = Photor::JPEG.new(d_path)
+          if jpg == existing
+            puts "#{d_path} exists" if options[:dry_run]
+            next
+          else
+            i = 0
+            while File.exists? d_path
+              i += 1
+              d_path = d_path.sub(/\.([a-z]*$)/, ".#{i}.\\1")
+            end
+          end
+        end
+
+        if options[:dry_run]
+          puts "mkdir -p #{File.dirname(d_path)}"
+          puts "cp #{jpg.path} #{d_path}"
+        else
+          FileUtils.mkdir_p(File.dirname(d_path))
+          FileUtils.cp jpg.path, d_path
+        end
+      end
+      puts "\n"
     end
 
     desc "search [SOURCE]",
@@ -24,7 +52,14 @@ module Photor
     DESC
     method_option :tags, :type => :array, :desc => "only show files with matching EXIF keywords"
     def search(source)
-      Photor::Searcher.new(source).run(:tags => options[:tags])
+      tags = (options[:tags] || []).map(&:downcase)
+
+      Photor.each_jpeg(source) do |jpg|
+        exif_tags = Array(jpg.exif['Keywords'] || jpg.exif['Subject']).map(&:downcase)
+        next if (options[:tags] & exif_tags).empty?
+
+        puts jpg.path
+      end
     end
 
   end
