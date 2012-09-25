@@ -61,7 +61,7 @@ module Photor
       tags = (options[:tags] || []).map(&:downcase)
 
       Photor.each_jpeg(source) do |jpg|
-        exif_tags = Array(jpg.exif['Keywords'] || jpg.exif['Subject']).map(&:downcase)
+        exif_tags = jpg.tags.map(&:downcase)
         next if (options[:tags] & exif_tags).empty?
 
         puts jpg.path
