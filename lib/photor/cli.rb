@@ -12,6 +12,9 @@ module Photor
     DESC
     method_option :dry_run, :type => :boolean, :desc => "report actions that would be taken without performing them"
     def import(source, destination)
+      imported = 0
+      skipped  = 0
+
       puts "scanning:"
       Photor.each_jpeg(source) do |jpg|
         print "."
@@ -22,6 +25,7 @@ module Photor
           existing = Photor::JPEG.new(d_path)
           if jpg == existing
             puts "#{d_path} exists" if options[:dry_run]
+            skipped += 1
             next
           else
             i = 0
@@ -32,6 +36,7 @@ module Photor
           end
         end
 
+        imported += 1
         if options[:dry_run]
           puts "mkdir -p #{File.dirname(d_path)}"
           puts "cp #{jpg.path} #{d_path}"
@@ -41,6 +46,7 @@ module Photor
         end
       end
       puts "\n"
+      puts "imported: #{imported} skipped: #{skipped}"
     end
 
     desc "search [SOURCE]",
