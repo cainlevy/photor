@@ -4,6 +4,7 @@ require 'digest'
 require_relative 'photor/photo'
 require_relative 'photor/jpeg'
 require_relative 'photor/exif'
+require_relative 'photor/db'
 
 require_relative 'photor/cli'
 
