@@ -11,5 +11,9 @@ module Photor
     def tags
       Array(exif['Keywords']) + Array(exif['Subject'])
     end
+
+    def orientation
+      exif['Orientation']
+    end
   end
 end

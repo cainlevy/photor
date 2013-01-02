@@ -73,16 +73,42 @@ module Photor
     desc "orient [FOLDER]",
       "auto-orients photos in FOLDER"
     long_desc <<-DESC
-      Finds JPEGs in FOLDER where the Orientation is not 1, and rotates them.
-
-      My camera does not have an orientation sensor though (whyyyyy) so I
-      haven't written this yet.
-
-      Essentially will be a Ruby version of http://jpegclub.org/exif_orientation.html.
+      Finds JPEGs in FOLDER where the Orientation is not 1, and rotates them. Sets
+      Orientation=1 when it is finished.
     DESC
     def orient(folder)
-      # exiftool -t -s -n -Orientation *
-      # jpegtran
+      orientations = {
+        2 => '-flip horizontal',
+        3 => '-rotate 180',
+        4 => '-flip vertical',
+        5 => '-transpose',
+        6 => '-rotate 90',
+        7 => '-transverse',
+        8 => '-rotate 270'
+      }
+
+      ct = 0
+      puts "scanning:"
+      Photor.each_jpeg(folder) do |jpg|
+        print "."
+        next unless transform = orientations[jpg.orientation]
+puts jpg.path
+        # losslessly transform. jpegtran writes a new file and strips Orientation.
+        `jpegtran -perfect #{transform} #{Photor.shellarg jpg.path} > #{$$}.tmp`
+
+        if $?.exitstatus == 0
+          puts 'oriented'
+          `mv #{$$}.tmp #{Photor.shellarg jpg.path}`
+          jpg.exif['Orientation'] = 1
+          ct += 1
+        else
+          puts 'failed'
+          `rm #{$$}.tmp`
+          puts "could not orient #{jpg.path}"
+        end
+      end
+      puts "\n"
+      puts "oriented: #{ct}"
     end
 
     desc "search [SOURCE]",
