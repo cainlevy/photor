@@ -49,10 +49,9 @@ module Photor
     end
 
     desc "organize [SOURCE] [DESTINATION]",
-      "organizes photos from SOURCE to DESTINATION by date"
+      "moves photos from SOURCE to DESTINATION by date"
     long_desc <<-DESC
       Recursively searches the SOURCE directory and all sub-directories for JPEGs.
-
       Moves each found JPEG into a date hierarchy in DESTINATION.
     DESC
     method_option :dry_run, :type => :boolean, :desc => "report actions that would be taken without performing them"
@@ -68,6 +67,7 @@ module Photor
           FileUtils.mv jpg.path, d_path
         end
       end
+      puts "\n"
     end
 
     desc "orient [FOLDER]",
@@ -92,7 +92,7 @@ module Photor
       Photor.each_jpeg(folder) do |jpg|
         print "."
         next unless transform = orientations[jpg.orientation]
-puts jpg.path
+
         # losslessly transform. jpegtran writes a new file and strips Orientation.
         `jpegtran -perfect #{transform} #{Photor.shellarg jpg.path} > #{$$}.tmp`
 
