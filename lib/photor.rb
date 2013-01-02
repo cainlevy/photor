@@ -13,4 +13,8 @@ module Photor
       yield Photor::JPEG.new(o_path)
     end
   end
+
+  def self.shellarg(val)
+    "'#{val.gsub(/'/, "\\'")}'"
+  end
 end

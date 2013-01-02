@@ -8,8 +8,11 @@ end
 
 module Photor
   class Exif
+    attr_reader :path
+
     def initialize(path)
-      @data = JSON.parse(`exiftool "#{path.gsub(/"/, '\\"')}" -json`).first
+      @path = path
+      @data = JSON.parse(`exiftool -n -json #{Photor.shellarg(@path)}`).first
     end
 
     def date_time
@@ -18,6 +21,10 @@ module Photor
 
     def [](name)
       @data[name]
+    end
+
+    def []=(name, value)
+      `exiftool -overwrite_original -preserve -n -#{name}=#{value} #{Photor.shellarg(@path)}`
     end
 
     def method_missing(name, *args)
