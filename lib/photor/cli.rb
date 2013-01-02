@@ -93,8 +93,8 @@ module Photor
         print "."
         next unless transform = orientations[jpg.orientation]
 
-        # losslessly transform. jpegtran writes a new file and strips Orientation.
-        `jpegtran -perfect #{transform} #{Photor.shellarg jpg.path} > #{$$}.tmp`
+        # losslessly transform
+        `jpegtran -copy all -perfect #{transform} #{Photor.shellarg jpg.path} > #{$$}.tmp`
 
         if $?.exitstatus == 0
           puts 'oriented'
