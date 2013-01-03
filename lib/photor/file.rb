@@ -1,9 +1,11 @@
 module Photor
-  class Photo
+  class File
     attr_reader :path
 
     def initialize(path)
       @path = path
+
+      extend(Photor::JPEG) if path =~ /[.]jpe?g\Z/i
     end
 
     def name

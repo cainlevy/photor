@@ -1,5 +1,5 @@
 module Photor
-  class JPEG < Photo
+  module JPEG
     def taken_at
       exif.date_time || super
     end
