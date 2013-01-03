@@ -1,11 +1,7 @@
 require 'fileutils'
 require 'digest'
 
-require_relative 'photor/photo'
-require_relative 'photor/jpeg'
-require_relative 'photor/exif'
-
-require_relative 'photor/cli'
+require_relative 'photor/file'
 
 module Photor
   def self.each_jpeg(dir, &block)

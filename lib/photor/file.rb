@@ -1,3 +1,5 @@
+require_relative 'photor/jpeg'
+
 module Photor
   class File
     attr_reader :path

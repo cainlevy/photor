@@ -1,3 +1,5 @@
+require_relative 'exif'
+
 module Photor
   module JPEG
     def taken_at
