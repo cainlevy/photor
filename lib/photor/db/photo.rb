@@ -21,5 +21,10 @@ class Photor::DB
         end
       end
     end
+
+    # TODO: use virtus
+    def taken_at
+      Time.at(@taken_at.to_i)
+    end
   end
 end

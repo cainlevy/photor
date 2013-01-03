@@ -1,23 +1,27 @@
 require 'thor'
+require_relative '../db'
+require_relative '../db/photos'
+require_relative '../db/photo'
 
 class Photor::CLI < Thor
 
   desc "search [SOURCE]",
     "finds photos in SOURCE that match specified criteria"
   long_desc <<-DESC
-    Recursively searches the SOURCE directory for all JPEGs that match specified
-    criteria, such as EXIF tags (aka keywords). Reports each found file, one
-    per line.
+    Uses the index database to find photos matching all criteria.
   DESC
-  method_option :tags, :type => :array, :desc => "only show files with matching EXIF keywords"
+  method_option :tags, :type => :array, :desc => "only show files with matching tags"
   def search(source)
-    tags = (options[:tags] || []).map(&:downcase)
+    tags = Array(options[:tags]).map(&:downcase)
 
-    Photor.each_jpeg(source) do |jpg|
-      exif_tags = jpg.tags.map(&:downcase)
-      next if (options[:tags] & exif_tags).empty?
+    db = Photor::DB.new(source)
 
-      puts jpg.path
+    photo_sets = []
+    tags.each{|t| photo_sets << db.photos.find_by_tag(t) }
+    photos = photo_sets.inject(photo_sets.first, :&)
+
+    photos.each do |p|
+      puts Photor.path(p.taken_at, p.filename)
     end
   end
 

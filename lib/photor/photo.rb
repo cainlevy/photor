@@ -23,7 +23,7 @@ module Photor
     end
 
     def to_path
-      "#{taken_at.strftime "%Y/%m/%d"}/#{name}"
+      Photor.path(taken_at, name)
     end
 
     def ==(other)

@@ -3,8 +3,17 @@ require_relative '../db'
 class Photor::DB
   class Photos < Table
     def find(filename, taken_at)
-      row = db.get_first_row("SELECT id, filename, taken_at FROM photos WHERE filename = ? AND taken_at = ?", filename, taken_at.to_i)
-      row && Photo.new(db, {'id' => row[0], 'filename' => row[1], 'taken_at' => row[2]})
+      select(Photo, "SELECT id, filename, taken_at FROM photos WHERE filename = ? AND taken_at = ?", filename, taken_at.to_i)
+    end
+
+    def find_by_tag(tag)
+      select_all(Photo, <<-SQL, tag)
+        SELECT photos.id, photos.filename, photos.taken_at
+        FROM photos
+        INNER JOIN taggings ON taggings.photo_id = photos.id
+        INNER JOIN tags ON taggings.tag_id = tags.id
+        WHERE tags.name = ?
+      SQL
     end
 
     def create(filename, taken_at)
@@ -14,6 +23,12 @@ class Photor::DB
 
     def find_or_create(filename, taken_at)
       find(filename, taken_at) || create(filename, taken_at)
+    end
+
+    private
+
+    def result_to_hash(row)
+      {'id' => row[0], 'filename' => row[1], 'taken_at' => row[2]}
     end
   end
 end

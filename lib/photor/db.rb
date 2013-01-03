@@ -44,10 +44,23 @@ module Photor
       @photos ||= Photos.new(@conn)
     end
 
+    # TODO: find sqlite docs and deprecate result_to_hash by introspecting result set
     class Table
       attr_accessor :db
       def initialize(db)
         @db = db
+      end
+
+      private
+
+      def select(klass, *sql)
+        row = db.get_first_row(*sql)
+        row && klass.new(db, result_to_hash(row))
+      end
+
+      def select_all(klass, *sql)
+        rows = db.execute(*sql)
+        rows.map{|row| klass.new(db, result_to_hash(row))}
       end
     end
 

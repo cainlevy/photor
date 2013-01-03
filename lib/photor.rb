@@ -14,6 +14,10 @@ module Photor
     end
   end
 
+  def self.path(taken_at, name)
+    "#{taken_at.strftime "%Y/%m/%d"}/#{name}"
+  end
+
   def self.shellarg(val)
     "\"#{val.gsub(/"/){|m| "\\" + m}}\""
   end
