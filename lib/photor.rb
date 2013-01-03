@@ -16,6 +16,6 @@ module Photor
   end
 
   def self.shellarg(val)
-    "'#{val.gsub(/'/){|m| "\\" + m}}'"
+    "\"#{val.gsub(/"/){|m| "\\" + m}}\""
   end
 end
