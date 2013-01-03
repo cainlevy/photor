@@ -77,7 +77,7 @@ module Photor
 
       # SET all tags (any tags not listed will be deleted)
       def tags=(*tags)
-        tags = tags.flatten
+        tags = tags.flatten.uniq
 
         puts "setting tags for #{self.id} to #{tags.join('|')}"
         db.transaction do |trans|
