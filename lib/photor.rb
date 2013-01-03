@@ -5,7 +5,7 @@ require_relative 'photor/file'
 
 module Photor
   def self.each_jpeg(dir, &block)
-    Dir.glob(File.join(dir, '**', '*.{jpg,jpeg,JPG,JPEG}')).each do |o_path|
+    Dir.glob(::File.join(dir, '**', '*.{jpg,jpeg,JPG,JPEG}')).each do |o_path|
       yield Photor::File.new(o_path)
     end
   end

@@ -1,4 +1,4 @@
-require_relative 'photor/jpeg'
+require_relative 'jpeg'
 
 module Photor
   class File
@@ -11,7 +11,7 @@ module Photor
     end
 
     def name
-      @name ||= File.basename(path)
+      @name ||= ::File.basename(path)
     end
 
     def md5
@@ -19,11 +19,11 @@ module Photor
     end
 
     def size
-      @size ||= File.size(path)
+      @size ||= ::File.size(path)
     end
 
     def taken_at
-      @taken_at ||= File.ctime(path)
+      @taken_at ||= ::File.ctime(path)
     end
 
     def ==(other)
