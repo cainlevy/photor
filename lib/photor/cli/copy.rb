@@ -27,7 +27,7 @@ class Photor::CLI < Thor
     Photor.each_jpeg(source) do |jpg|
       print "."
 
-      d_path = File.join(destination, jpg.to_path)
+      d_path = File.join(destination, Photor.path(jpg.taken_at, jpg.name))
 
       if File.exists? d_path
         puts "#{d_path} exists" if options[:dry_run]

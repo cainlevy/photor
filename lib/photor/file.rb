@@ -26,10 +26,6 @@ module Photor
       @taken_at ||= File.ctime(path)
     end
 
-    def to_path
-      Photor.path(taken_at, name)
-    end
-
     def ==(other)
       self.size == other.size && self.md5 == other.md5
     end
