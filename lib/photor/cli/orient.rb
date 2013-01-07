@@ -29,12 +29,10 @@ class Photor::CLI < Thor
       `jpegtran -copy all -perfect #{transform} #{Photor.shellarg jpg.path} > #{$$}.tmp`
 
       if $?.exitstatus == 0
-        puts 'oriented'
         `mv #{$$}.tmp #{Photor.shellarg jpg.path}`
         jpg.exif['Orientation'] = 1
         ct += 1
       else
-        puts 'failed'
         `rm #{$$}.tmp`
         puts "could not orient #{jpg.path}"
       end
