@@ -3,7 +3,7 @@ require_relative 'exif'
 module Photor
   module JPEG
     def taken_at
-      exif.date_time || super
+      exif.date_time
     end
 
     def extension
