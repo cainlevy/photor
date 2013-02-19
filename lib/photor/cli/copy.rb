@@ -27,7 +27,7 @@ class Photor::CLI < Thor
     Photor.each_jpeg(source) do |jpg|
       print "."
 
-      d_path = ::File.join(destination, Photor.path(jpg.taken_at, jpg.name))
+      d_path = ::File.join(destination, Photor.path(jpg.taken_at, jpg.unique_name))
 
       if ::File.exists? d_path
         puts "#{d_path} exists" if options[:dry_run]
@@ -38,9 +38,9 @@ class Photor::CLI < Thor
       copied += 1
 
       if options[:dry_run]
-        puts "cp #{jpg.path} #{d_path}"
+        puts "copying #{jpg.path}"
       else
-        FileUtils.cp jpg.path, ::File.join(import_folder, jpg.name)
+        FileUtils.cp jpg.path, ::File.join(import_folder, jpg.unique_name)
       end
     end
     puts "\n"

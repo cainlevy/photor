@@ -14,6 +14,10 @@ module Photor
       @name ||= ::File.basename(path)
     end
 
+    def extension
+      @extension ||= ::File.extname(path)
+    end
+
     def md5
       @md5 ||= Digest::MD5.file(path).to_s
     end

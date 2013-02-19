@@ -6,6 +6,10 @@ module Photor
       exif.date_time || super
     end
 
+    def extension
+      '.jpg'
+    end
+
     def exif
       @exif ||= Photor::Exif.new(path)
     end
@@ -16,6 +20,10 @@ module Photor
 
     def orientation
       exif['Orientation']
+    end
+
+    def unique_name
+      @unique_name ||= "#{taken_at.strftime "%H%M%S"}-#{md5}#{extension}"
     end
   end
 end
