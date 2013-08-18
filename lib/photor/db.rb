@@ -32,7 +32,7 @@ module Photor
     def initialize(base_path)
       db_path = ::File.join(base_path, FILENAME)
       unless ::File.exists? db_path
-        puts "initializing"
+        puts "initializing #{db_path}"
         @conn = SQLite3::Database.new(db_path)
         @conn.execute_batch(SCHEMA)
         @conn.execute("INSERT INTO meta (version) VALUES (?)", VERSION)
