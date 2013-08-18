@@ -1,7 +1,8 @@
 require_relative 'exif'
+require_relative 'media'
 
 module Photor
-  module JPEG
+  class JPEG < Media
     def taken_at
       exif.date_time
     end

@@ -1,12 +1,12 @@
 require 'fileutils'
 require 'digest'
 
-require_relative 'photor/file'
+require_relative 'photor/jpeg'
 
 module Photor
   def self.each_jpeg(dir, &block)
-    Dir.glob(::File.join(dir, '**', '*.{jpg,jpeg,JPG,JPEG}')).each do |o_path|
-      yield Photor::File.new(o_path)
+    Dir.glob(File.join(dir, '**', '*.{jpg,jpeg,JPG,JPEG}')).each do |o_path|
+      yield Photor::JPEG.new(o_path)
     end
   end
 

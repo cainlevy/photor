@@ -1,21 +1,17 @@
-require_relative 'jpeg'
-
 module Photor
-  class File
+  class Media
     attr_reader :path
 
     def initialize(path)
       @path = path
-
-      extend(Photor::JPEG) if path =~ /[.]jpe?g\Z/i
     end
 
     def name
-      @name ||= ::File.basename(path)
+      @name ||= File.basename(path)
     end
 
     def extension
-      @extension ||= ::File.extname(path)
+      @extension ||= File.extname(path)
     end
 
     def md5
@@ -23,7 +19,7 @@ module Photor
     end
 
     def size
-      @size ||= ::File.size(path)
+      @size ||= File.size(path)
     end
 
     def ==(other)

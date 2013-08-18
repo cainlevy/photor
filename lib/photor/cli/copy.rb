@@ -20,16 +20,16 @@ class Photor::CLI < Thor
     copied = 0
     skipped  = 0
 
-    import_folder = ::File.join(destination, "import #{Time.now.strftime "%Y%m%d-%H%M%S"}")
+    import_folder = File.join(destination, "import #{Time.now.strftime "%Y%m%d-%H%M%S"}")
     FileUtils.mkdir_p(import_folder) unless options[:dry_run]
 
     puts "scanning:"
     Photor.each_jpeg(source) do |jpg|
       print "."
 
-      d_path = ::File.join(destination, Photor.path(jpg.taken_at, jpg.unique_name))
+      d_path = File.join(destination, Photor.path(jpg.taken_at, jpg.unique_name))
 
-      if ::File.exists? d_path
+      if File.exists? d_path
         puts "#{d_path} exists" if options[:dry_run]
         skipped += 1
         next
@@ -40,7 +40,7 @@ class Photor::CLI < Thor
       if options[:dry_run]
         puts "copying #{jpg.path}"
       else
-        FileUtils.cp jpg.path, ::File.join(import_folder, jpg.unique_name)
+        FileUtils.cp jpg.path, File.join(import_folder, jpg.unique_name)
       end
     end
     puts "\n"
