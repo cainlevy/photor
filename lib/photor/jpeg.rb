@@ -3,6 +3,8 @@ require_relative 'media'
 
 module Photor
   class JPEG < Media
+    FINGERPRINT_LENGTH = 24
+
     def taken_at
       exif.date_time
     end
@@ -24,7 +26,7 @@ module Photor
     end
 
     def unique_name
-      @unique_name ||= "#{taken_at.strftime "%H%M%S"}-#{md5}#{extension}"
+      @unique_name ||= "#{taken_at.strftime "%Y%m%d%H%M%S"}-#{md5[0, FINGERPRINT_LENGTH]}#{extension}"
     end
   end
 end
