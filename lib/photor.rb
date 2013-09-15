@@ -5,6 +5,8 @@ require_relative 'photor/jpeg'
 
 module Photor
   def self.each_jpeg(dir, &block)
+    return to_enum(:each_jpeg, dir) unless block_given?
+
     Dir.glob(File.join(dir, '**', '*.{jpg,jpeg,JPG,JPEG}')).each do |o_path|
       yield Photor::JPEG.new(o_path)
     end
