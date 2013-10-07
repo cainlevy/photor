@@ -24,11 +24,5 @@ class Photor::DB
     def find_or_create(filename, taken_at)
       find(filename, taken_at) || create(filename, taken_at)
     end
-
-    private
-
-    def result_to_hash(row)
-      {'id' => row[0], 'filename' => row[1], 'taken_at' => row[2]}
-    end
   end
 end

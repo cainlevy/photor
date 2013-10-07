@@ -44,7 +44,6 @@ module Photor
       @photos ||= Photos.new(@conn)
     end
 
-    # TODO: find sqlite docs and deprecate result_to_hash by introspecting result set
     class Table
       attr_accessor :db
       def initialize(db)
@@ -53,14 +52,17 @@ module Photor
 
       private
 
-      def select(klass, *sql)
-        row = db.get_first_row(*sql)
-        row && klass.new(db, result_to_hash(row))
+      def select(*args)
+        select_all(*args)[0]
       end
 
-      def select_all(klass, *sql)
-        rows = db.execute(*sql)
-        rows.map{|row| klass.new(db, result_to_hash(row))}
+      def select_all(klass, sql, *binds)
+        db.prepare(sql) do |stmt|
+          stmt.bind_params(binds)
+          stmt.map do |row|
+            klass.new(db, Hash[*stmt.columns.zip(row).flatten])
+          end
+        end
       end
     end
 
