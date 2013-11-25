@@ -13,12 +13,15 @@ class Photor::CLI < Thor
     Photor.each_jpeg(source) do |jpg|
       print "."
 
-      d_path = File.join(destination, Photor.path(jpg.taken_at, jpg.name))
+      s_path = File.expand_path(jpg.path)
+      d_path = File.expand_path(File.join(destination, Photor.path(jpg.taken_at, jpg.name)))
+      next if s_path == d_path
+
       if options[:dry_run]
-        puts "moving #{jpg.path} to #{d_path}"
+        puts "\nmoving #{s_path} to #{d_path}"
       else
         FileUtils.mkdir_p File.dirname(d_path)
-        FileUtils.mv jpg.path, d_path
+        FileUtils.mv s_path, d_path
       end
     end
     puts "\n"
