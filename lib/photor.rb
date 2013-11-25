@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'digest'
+require 'shellwords'
 
 require_relative 'photor/jpeg'
 
@@ -17,6 +18,6 @@ module Photor
   end
 
   def self.shellarg(val)
-    "\"#{val.gsub(/"/){|m| "\\" + m}}\""
+    Shellwords.escape(val)
   end
 end
