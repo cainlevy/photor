@@ -20,15 +20,15 @@ class Photor::DB
     end
 
     def years
-      db.execute(<<-SQL).flatten.sort
-        SELECT DISTINCT YEAR(taken_at)
+      db.conn.execute(<<-SQL).flatten.sort
+        SELECT DISTINCT STRFTIME('%Y', taken_at, 'unixepoch')
         FROM #{NAME}
       SQL
     end
 
     def create(filename, taken_at)
-      db.execute("INSERT INTO #{NAME} (#{COLUMNS.join(', ')}) VALUES (NULL, ?, ?)", filename, taken_at.to_i)
-      Photo.new(db, {'id' => db.last_insert_row_id, 'filename' => filename, 'taken_at' => taken_at.to_i})
+      db.conn.execute("INSERT INTO #{NAME} (#{COLUMNS.join(', ')}) VALUES (NULL, ?, ?)", filename, taken_at.to_i)
+      Photo.new(db, {'id' => db.conn.last_insert_row_id, 'filename' => filename, 'taken_at' => taken_at.to_i})
     end
 
     def find_or_create(filename, taken_at)

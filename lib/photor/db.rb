@@ -29,6 +29,8 @@ module Photor
       );
     SQL
 
+    attr_reader :conn
+
     def initialize(base_path)
       db_path = File.join(base_path, FILENAME)
       unless File.exists? db_path
@@ -41,7 +43,11 @@ module Photor
     end
 
     def photos
-      @photos ||= Photos.new(@conn)
+      @photos ||= Photos.new(self)
+    end
+
+    def tags
+      @tags ||= Tags.new(self)
     end
 
     class Table
@@ -57,7 +63,7 @@ module Photor
       end
 
       def select_all(klass, sql, *binds)
-        db.prepare(sql) do |stmt|
+        db.conn.prepare(sql) do |stmt|
           stmt.bind_params(binds)
           stmt.map do |row|
             klass.new(db, Hash[*stmt.columns.zip(row).flatten])

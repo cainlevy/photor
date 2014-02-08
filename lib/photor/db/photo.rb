@@ -9,7 +9,7 @@ class Photor::DB
     def tags=(*tags)
       tags = tags.flatten.uniq
 
-      db.transaction do |trans|
+      db.conn.transaction do |trans|
         trans.execute("DELETE FROM taggings WHERE photo_id = ?", self.id)
 
         if tags.any?
@@ -22,9 +22,13 @@ class Photor::DB
       end
     end
 
+    def tags
+      db.tags.find_by_photo(self)
+    end
+
     # TODO: use virtus
     def taken_at
-      Time.at(@taken_at.to_i)
+      @taken_at_time ||= Time.at(@taken_at.to_i)
     end
   end
 end
