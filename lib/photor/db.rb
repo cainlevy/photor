@@ -30,10 +30,13 @@ module Photor
     SQL
 
     attr_reader :conn
+    attr_reader :mtime
 
     def initialize(base_path)
       db_path = File.join(base_path, FILENAME)
-      unless File.exists? db_path
+      if File.exists? db_path
+        @mtime = File.mtime(db_path)
+      else
         puts "initializing #{db_path}"
         @conn = SQLite3::Database.new(db_path)
         @conn.execute_batch(SCHEMA)

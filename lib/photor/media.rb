@@ -22,6 +22,10 @@ module Photor
       @size ||= File.size(path)
     end
 
+    def mtime
+      @mtime ||= File.mtime(path)
+    end
+
     def ==(other)
       self.size == other.size && self.md5 == other.md5
     end

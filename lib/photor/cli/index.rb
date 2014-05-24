@@ -20,7 +20,9 @@ class Photor::CLI < Thor
   method_option :dir, :type => :string, :default => '.', :desc => "location of photos and sqlite3 db"
   def index
     db = Photor::DB.new(options[:dir])
+    puts "indexing photos since #{db.mtime}" if db.mtime
     Photor.each_jpeg(options[:dir]) do |jpg|
+      next unless db.mtime && jpg.mtime > db.mtime
       print "."
 
       photo = db.photos.find_or_create(jpg.name, jpg.taken_at)
