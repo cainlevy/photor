@@ -1,6 +1,6 @@
 require_relative 'test_helper'
 
-class PhotorTest < MiniTest::Unit::TestCase
+class PhotorTest < MiniTest::Test
   include PhotorFixturesHelper
 
   def test_method_each_jpeg
@@ -14,6 +14,21 @@ class PhotorTest < MiniTest::Unit::TestCase
 
     jpgs = Photor.each_jpeg(photos_path).to_a
     assert_equal expected.sort, jpgs.map(&:path).sort
+  end
+
+  def test_each_jpeg_since
+    # set mtime to 2014-10-30 12:34:00
+    older = img('older.jpg').tap{|path| `touch -t201410301234 #{path}` }
+    newer = img('newer.jpg')
+
+    jpgs = Photor.each_jpeg(photos_path, since: '2014-11-01').to_a
+    assert_equal [newer], jpgs.map(&:path).sort
+
+    jpgs = Photor.each_jpeg(photos_path, since: '2014-01-01').to_a
+    assert_equal [older, newer].sort, jpgs.map(&:path).sort
+
+    jpgs = Photor.each_jpeg(photos_path, since: '2014-10-30').to_a
+    assert_equal [older, newer].sort, jpgs.map(&:path).sort
   end
 end
 
