@@ -34,6 +34,8 @@ class Photor::CLI < Thor
   def s3push(library, s3_bucket_name)
     s3 = AWS::S3.new
     bucket = s3.buckets[s3_bucket_name]
+    uploaded = 0
+    skipped = 0
 
     if options[:since]
       # convert date str to time
@@ -48,8 +50,13 @@ class Photor::CLI < Thor
 
       if s3_object.exists?
         s3_etag = s3_object.etag.gsub(/"/, '') # why the quotes?
-        next if s3_etag == jpg.md5
+        if s3_etag == jpg.md5
+          skipped += 1
+          next
+        end
       end
+
+      uploaded += 1
 
       if options[:dry_run]
         puts "uploading #{library_path}"
@@ -58,5 +65,7 @@ class Photor::CLI < Thor
         s3_object.write(Pathname.new(library_path))
       end
     end
+    puts "\n"
+    puts "uploaded: #{uploaded} skipped: #{skipped}"
   end
 end
