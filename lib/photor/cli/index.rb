@@ -21,8 +21,7 @@ class Photor::CLI < Thor
   def index
     db = Photor::DB.new(options[:dir])
     puts "indexing photos since #{db.mtime}" if db.mtime
-    Photor.each_jpeg(options[:dir]) do |jpg|
-      next unless db.mtime && jpg.mtime > db.mtime
+    Photor.each_jpeg(options[:dir], since: db.mtime) do |jpg|
       print "."
 
       photo = db.photos.find_or_create(jpg.name, jpg.taken_at)

@@ -35,8 +35,13 @@ class Photor::CLI < Thor
     s3 = AWS::S3.new
     bucket = s3.buckets[s3_bucket_name]
 
-    puts 'scanning:'
-    Photor.each_jpeg(library, since: options[:since]).with_index do |jpg, idx|
+    if options[:since]
+      # convert date str to time
+      since = Date.new(*options[:since].split('-').map(&:to_i)).to_time
+    end
+
+    puts "scanning photos #{"since #{since}" if since}:"
+    Photor.each_jpeg(library, since: since).with_index do |jpg, idx|
       print '.'
       library_path = jpg.path.sub(/^#{library}\//, '')
       s3_object = bucket.objects[library_path]
