@@ -5,12 +5,12 @@ ENV['AWS_PROFILE'] ||= 'photor'
 
 class Photor::CLI < Thor
 
-  desc "s3push [LIBRARY] [BUCKET]",
-    "pushes the organized LIBRARY up to a BUCKET in Amazon's S3"
+  desc "s3pull [BUCKET] [LIBRARY]",
+    "pulls an Amazon S3 BUCKET into a local LIBRARY"
   long_desc <<-DESC
-    Compares all JPEGs in LIBRARY against BUCKET on Amazon S3, and uploads files that are new or changed.
+    Compares all JPEGs in BUCKET on Amazon S3 against the local LIBRARY, and downloads files that are new or changed.
 
-    Does not download files from S3. Use `s3pull` instead.
+    Does not upload files to S3. Use `s3push` instead.
 
     Does not delete files remotely or locally.
 
@@ -30,42 +30,43 @@ class Photor::CLI < Thor
       3) an IAM role on your EC2 instance
   DESC
   method_option :dry_run, type: :boolean, desc: 'report actions that would be taken without performing them'
-  method_option :since, type: :string, desc: 'only compare files modified since date YYYY-MM-DD'
-  def s3push(library, s3_bucket_name)
+  # TODO: option to only sync certain files. maybe by tag? maybe by subfolder (datepart)?
+  def s3pull(s3_bucket_name, library)
     s3 = AWS::S3.new
     bucket = s3.buckets[s3_bucket_name]
-    uploaded = 0
+    downloaded = 0
     skipped = 0
 
     if options[:since]
-      # convert date str to time
       since = Date.new(*options[:since].split('-').map(&:to_i)).to_time
     end
 
-    puts "scanning photos #{"since #{since}" if since}:"
-    Photor.each_jpeg(library, since: since).with_index do |jpg, idx|
+    bucket.objects.each do |s3_object|
+      next if File.extname(s3_object.key).empty?
       print '.'
-      library_path = jpg.path.sub(/^#{library}\//, '')
-      s3_object = bucket.objects[library_path]
-
-      if s3_object.exists?
-        s3_etag = s3_object.etag.gsub(/"/, '') # why the quotes?
-        if s3_etag == jpg.md5
+      local_path = File.join(library, s3_object.key)
+      s3_etag = s3_object.etag.gsub(/"/, '') # why the quotes?
+      if jpg = Photor::JPEG.find(local_path)
+        if jpg.md5 == s3_etag
           skipped += 1
           next
         end
       end
-
-      uploaded += 1
+      downloaded += 1
 
       if options[:dry_run]
-        puts "uploading #{library_path}"
+        puts "downloading #{s3_object.key}"
       else
-        # Naive upload. Might be nice to upload via background queue, with progress bars.
-        s3_object.write(Pathname.new(library_path))
+        # TODO: download in threaded queue, with progress bars
+        FileUtils.mkdir_p(File.dirname(local_path))
+        File.open(local_path, 'wb') do |f|
+          s3_object.read do |chunk|
+            f.write(chunk)
+          end
+        end
       end
     end
     puts "\n"
-    puts "uploaded: #{uploaded} skipped: #{skipped}"
+    puts "downloaded: #{downloaded} skipped: #{skipped}"
   end
 end

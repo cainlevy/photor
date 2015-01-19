@@ -2,6 +2,14 @@ module Photor
   class Media
     attr_reader :path
 
+    def self.find(path)
+      if File.exists?(path)
+        new(path)
+      else
+        nil
+      end
+    end
+
     def initialize(path)
       @path = path
     end
