@@ -1,31 +1,26 @@
 require 'thor'
-
-require 'celluloid'
-Celluloid.task_class = Celluloid::TaskThread
-Celluloid.logger = nil
-
-require 'aws'
-AWS.config(s3_cache_object_attributes: true)
-ENV['AWS_PROFILE'] ||= 'photor'
+require_relative '../actors'
+require_relative '../aws'
 
 class Photor::CLI < Thor
   class Downloader < Struct.new(:library, :dry_run)
     include Celluloid
 
-    # returns truthy if fetched
     def fetch_if_new(s3_object)
       local_path = File.join(library, s3_object.key)
       etag       = s3_object.etag.gsub(/"/, '') # why the quotes?
 
       if is_new?(local_path, etag)
-        print '+'
         if dry_run
           puts "downloading #{s3_object.key}"
         else
           fetch(s3_object, local_path)
         end
+        print '+'
+        true
       else
         print '.'
+        false
       end
     end
 
@@ -74,32 +69,14 @@ class Photor::CLI < Thor
     s3 = AWS::S3.new
     bucket = s3.buckets[s3_bucket_name]
 
-    stats = {downloaded: 0, skipped: 0}
-    count = ->(values){
-      values.each do |v|
-        stats[v ? :downloaded : :skipped] += 1
-      end
-    }
-
-    # TODO: supervisors for fault tolerance?
-    pool = Downloader.pool(args: [library, options[:dry_run]])
-    futures = []
-
-    bucket.objects.each do |s3_object|
-      next if File.extname(s3_object.key).empty?
-
-      futures << pool.future.fetch_if_new(s3_object)
-
-      while futures.size >= Celluloid.cores * 2
-        sleep 0.001 # don't hog CPU with #partition
-        ready, futures = futures.partition(&:ready?)
-        count.call(ready.map(&:value))
+    stats = Photor.work(Downloader.pool(args: [library, options[:dry_run]])) do |pool, &tracker|
+      bucket.objects.each do |s3_object|
+        next if File.extname(s3_object.key).empty?
+        tracker.call pool.fetch_if_new(s3_object)
       end
     end
 
-    count.call(futures.map(&:value))
-
     puts "\n"
-    puts "downloaded: #{stats[:downloaded]} skipped: #{stats[:skipped]}"
+    puts "downloaded: #{stats[:truthy]} skipped: #{stats[:falsey]}"
   end
 end

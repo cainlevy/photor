@@ -1,9 +1,43 @@
 require 'thor'
-require 'aws'
-AWS.config(s3_cache_object_attributes: true)
-ENV['AWS_PROFILE'] ||= 'photor'
+require_relative '../actors'
+require_relative '../aws'
 
 class Photor::CLI < Thor
+  class Uploader < Struct.new(:library, :bucket, :dry_run)
+    include Celluloid
+
+    def upload_if_new(jpg)
+      library_path = jpg.path.sub(/^#{library}\//, '')
+
+      if is_new?(library_path, jpg.md5)
+        if dry_run
+          puts "uploading #{library_path}"
+        else
+          upload(library_path)
+        end
+        print '+'
+        true
+      else
+        print '.'
+        false
+      end
+    end
+
+    protected
+
+    def is_new?(library_path, md5)
+      s3_object = bucket.objects[library_path]
+      !(s3_object.exists? && etag(s3_object) == md5)
+    end
+
+    def upload(library_path)
+      bucket.objects[library_path].write(Pathname.new(library_path))
+    end
+
+    def etag(s3_object)
+      s3_object.head[:etag].gsub(/"/, '') # why the quotes?
+    end
+  end
 
   desc "s3push [LIBRARY] [BUCKET]",
     "pushes the organized LIBRARY up to a BUCKET in Amazon's S3"
@@ -34,38 +68,19 @@ class Photor::CLI < Thor
   def s3push(library, s3_bucket_name)
     s3 = AWS::S3.new
     bucket = s3.buckets[s3_bucket_name]
-    uploaded = 0
-    skipped = 0
 
     if options[:since]
-      # convert date str to time
       since = Date.new(*options[:since].split('-').map(&:to_i)).to_time
     end
 
     puts "scanning photos #{"since #{since}" if since}:"
-    Photor.each_jpeg(library, since: since).with_index do |jpg, idx|
-      print '.'
-      library_path = jpg.path.sub(/^#{library}\//, '')
-      s3_object = bucket.objects[library_path]
-
-      if s3_object.exists?
-        s3_etag = s3_object.etag.gsub(/"/, '') # why the quotes?
-        if s3_etag == jpg.md5
-          skipped += 1
-          next
-        end
-      end
-
-      uploaded += 1
-
-      if options[:dry_run]
-        puts "uploading #{library_path}"
-      else
-        # Naive upload. Might be nice to upload via background queue, with progress bars.
-        s3_object.write(Pathname.new(library_path))
+    stats = Photor.work(Uploader.pool(args: [library, bucket, options[:dry_run]])) do |pool, &tracker|
+      Photor.each_jpeg(library, since: since) do |jpg|
+        tracker.call pool.upload_if_new(jpg)
       end
     end
+
     puts "\n"
-    puts "uploaded: #{uploaded} skipped: #{skipped}"
+    puts "uploaded: #{stats[:truthy]} skipped: #{stats[:falsey]}"
   end
 end
