@@ -1,9 +1,48 @@
 require 'thor'
+
+require 'celluloid'
+Celluloid.task_class = Celluloid::TaskThread
+Celluloid.logger = nil
+
 require 'aws'
 AWS.config(s3_cache_object_attributes: true)
 ENV['AWS_PROFILE'] ||= 'photor'
 
 class Photor::CLI < Thor
+  class Downloader < Struct.new(:library, :dry_run)
+    include Celluloid
+
+    # returns truthy if fetched
+    def fetch_if_new(s3_object)
+      local_path = File.join(library, s3_object.key)
+      etag       = s3_object.etag.gsub(/"/, '') # why the quotes?
+
+      if is_new?(local_path, etag)
+        print '+'
+        if dry_run
+          puts "downloading #{s3_object.key}"
+        else
+          fetch(s3_object, local_path)
+        end
+      else
+        print '.'
+      end
+    end
+
+    protected
+
+    def is_new?(local_path, etag)
+      jpg = Photor::JPEG.find(local_path)
+      jpg.nil? || jpg.md5 != etag
+    end
+
+    def fetch(s3_object, local_path)
+      FileUtils.mkdir_p(File.dirname(local_path))
+      File.open(local_path, 'wb') do |f|
+        s3_object.read{ |chunk| f.write chunk }
+      end
+    end
+  end
 
   desc "s3pull [BUCKET] [LIBRARY]",
     "pulls an Amazon S3 BUCKET into a local LIBRARY"
@@ -34,39 +73,33 @@ class Photor::CLI < Thor
   def s3pull(s3_bucket_name, library)
     s3 = AWS::S3.new
     bucket = s3.buckets[s3_bucket_name]
-    downloaded = 0
-    skipped = 0
 
-    if options[:since]
-      since = Date.new(*options[:since].split('-').map(&:to_i)).to_time
-    end
+    stats = {downloaded: 0, skipped: 0}
+    count = ->(values){
+      values.each do |v|
+        stats[v ? :downloaded : :skipped] += 1
+      end
+    }
+
+    # TODO: supervisors for fault tolerance?
+    pool = Downloader.pool(args: [library, options[:dry_run]])
+    futures = []
 
     bucket.objects.each do |s3_object|
       next if File.extname(s3_object.key).empty?
-      print '.'
-      local_path = File.join(library, s3_object.key)
-      s3_etag = s3_object.etag.gsub(/"/, '') # why the quotes?
-      if jpg = Photor::JPEG.find(local_path)
-        if jpg.md5 == s3_etag
-          skipped += 1
-          next
-        end
-      end
-      downloaded += 1
 
-      if options[:dry_run]
-        puts "downloading #{s3_object.key}"
-      else
-        # TODO: download in threaded queue, with progress bars
-        FileUtils.mkdir_p(File.dirname(local_path))
-        File.open(local_path, 'wb') do |f|
-          s3_object.read do |chunk|
-            f.write(chunk)
-          end
-        end
+      futures << pool.future.fetch_if_new(s3_object)
+
+      while futures.size >= Celluloid.cores * 2
+        sleep 0.001 # don't hog CPU with #partition
+        ready, futures = futures.partition(&:ready?)
+        count.call(ready.map(&:value))
       end
     end
+
+    count.call(futures.map(&:value))
+
     puts "\n"
-    puts "downloaded: #{downloaded} skipped: #{skipped}"
+    puts "downloaded: #{stats[:downloaded]} skipped: #{stats[:skipped]}"
   end
 end
