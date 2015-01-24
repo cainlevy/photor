@@ -9,7 +9,7 @@ class Photor::CLI < Thor
   method_option :dir, :type => :string, :default => '.', :desc => "location of photos and sqlite3 db"
   def site
     db = Photor::DB.new(options[:dir])
-    Photor::Site.new(db, './_site').generate
+    Photor::Site.new(db, options[:dir]).generate
   end
 
 end
@@ -18,7 +18,7 @@ require 'erb'
 require 'date'
 
 module Photor
-  class Site < Struct.new(:db, :basedir)
+  class Site < Struct.new(:db, :dir)
     VIEWDIR = File.join(File.dirname(__FILE__), '../../../views')
 
     def generate
@@ -38,7 +38,7 @@ module Photor
 
     def generate_years
       db.photos.years.each do |year|
-        create "/#{year}.html", Page.new(title: year) do
+        create "/#{year}/index.html", Page.new(title: year) do
           (1..12).map do |month|
             d1 = Date.new(year.to_i, month.to_i, 1)
             d2 = d1.next_month.prev_day
@@ -52,7 +52,7 @@ module Photor
 
     def generate_tags
       db.tags.all.each do |tag|
-        create "/t/#{tag.name}.html", Page.new(title: tag.name) do
+        create "/t/#{tag.name}/index.html", Page.new(title: tag.name) do
           render('photos', photos: tag.photos)
         end
       end
@@ -87,7 +87,7 @@ module Photor
     end
 
     def create(path, page, &block)
-      path = File.join(basedir, path)
+      path = File.join(dir, path)
       FileUtils.mkdir_p(File.dirname(path))
       File.open(path, 'w') do |f|
         f << render('layout', page: page, &block)
