@@ -1,4 +1,5 @@
 require_relative '../db'
+require_relative 'tag'
 
 class Photor::DB
   class Tags < Table

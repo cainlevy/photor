@@ -1,9 +1,7 @@
-/* TODO: create fluid tiled effect */
 <ol>
   <% photos.each do |photo| %>
     <li>
-      /* TODO: link to full size */
-      <img src="<% photo.url %>" alt="<%= photo.name %>" class="preview" />
+      <img src="/<%= Photor.path(photo.taken_at, photo.filename) %>" />
     </li>
   <% end %>
 </ol>

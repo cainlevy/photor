@@ -1,7 +1,5 @@
 require 'thor'
-require_relative '../db'
 require_relative '../db/photos'
-require_relative '../db/photo'
 
 class Photor::CLI < Thor
 

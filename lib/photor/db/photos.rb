@@ -1,4 +1,5 @@
 require_relative '../db'
+require_relative 'photo'
 
 class Photor::DB
   class Photos < Table
@@ -16,6 +17,14 @@ class Photor::DB
         INNER JOIN taggings ON taggings.photo_id = photos.id
         INNER JOIN tags ON taggings.tag_id = tags.id
         WHERE tags.name = ?
+      SQL
+    end
+
+    def find_in_time_range(t1, t2)
+      select_all(Photo, <<-SQL, t1.to_i, t2.to_i)
+        SELECT #{COLUMNS.map{|c| [NAME, c].join('.' )}.join(', ')}
+        FROM #{NAME}
+        WHERE taken_at BETWEEN ? AND ?
       SQL
     end
 

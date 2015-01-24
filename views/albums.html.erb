@@ -1,9 +1,8 @@
+<h2><%= title %></h2>
 <ol>
   <% albums.each do |album| %>
     <li>
-      /* TODO: sample photos from album */
-      /* TODO: link to photos or album */
-      <%= album.name %>
+      <a href="<%= album.path %>"><%= album.name %></a>
     </li>
   <% end %>
 </ol>
