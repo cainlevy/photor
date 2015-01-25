@@ -1,7 +1,7 @@
 <h2><%= title %></h2>
-<ol>
+<ol class="albums">
   <% albums.each do |album| %>
-    <li>
+    <li class="albums__album">
       <a href="<%= album.path %>"><%= album.name %></a>
     </li>
   <% end %>

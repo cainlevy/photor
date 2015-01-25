@@ -16,6 +16,7 @@ end
 
 require 'erb'
 require 'date'
+require 'fileutils'
 
 module Photor
   class Site < Struct.new(:db, :dir)
@@ -25,6 +26,7 @@ module Photor
       generate_root
       generate_years
       generate_tags
+      copy_assets
     end
 
     protected
@@ -55,6 +57,12 @@ module Photor
         create "/t/#{tag.name}/index.html", Page.new(title: tag.name) do
           render('photos', photos: tag.photos)
         end
+      end
+    end
+
+    def copy_assets
+      Dir[File.join(VIEWDIR, '*.{css,js}')].each do |path|
+        FileUtils.copy(path, File.join(dir, File.basename(path)))
       end
     end
 

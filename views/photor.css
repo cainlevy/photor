@@ -1,0 +1,19 @@
+/* reset */
+ul, li, ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* photor */
+.photos {
+  clear: both;
+}
+.photos__photo {
+  float: left;
+  margin: 5px;
+}
+.photos__photo img {
+  max-width: 320px;
+  max-height: 240px;
+}

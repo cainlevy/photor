@@ -1,7 +1,9 @@
-<ol>
+<ol class="photos">
   <% photos.each do |photo| %>
-    <li>
-      <img src="/<%= Photor.path(photo.taken_at, photo.filename) %>" />
+    <li class="photos__photo">
+      <a href="<%= photo.url %>">
+        <img src="/<%= Photor.path(photo.taken_at, photo.filename) %>" />
+      </a>
     </li>
   <% end %>
 </ol>
