@@ -33,14 +33,14 @@ module Photor
 
     def generate_root
       create '/index.html', Page.new(title: 'Photor Site') do
-        render('albums', title: 'Years', albums: db.photos.years.map{|year| Album.new(name: year, path: "/#{year}") }) +
-        render('albums', title: 'Tags', albums: db.tags.all.map{|t| Album.new(name: t.name, path: "/t/#{URI.escape t.name}") })
+        render('albums', title: 'Years', albums: db.photos.years.map{|year| Album.new(name: year, path: year_index(year)) }) +
+        render('albums', title: 'Tags', albums: db.tags.all.map{|t| Album.new(name: t.name, path: tag_path(t)) })
       end
     end
 
     def generate_years
       db.photos.years.each do |year|
-        create "/#{year}/index.html", Page.new(title: year) do
+        create year_index(year), Page.new(title: year) do
           (1..12).map do |month|
             d1 = Date.new(year.to_i, month.to_i, 1)
             d2 = d1.next_month.prev_day
@@ -54,7 +54,7 @@ module Photor
 
     def generate_tags
       db.tags.all.each do |tag|
-        create "/t/#{tag.name}/index.html", Page.new(title: tag.name) do
+        create tag_index(tag), Page.new(title: tag.name) do
           render('photos', photos: tag.photos)
         end
       end
@@ -82,7 +82,52 @@ module Photor
 
     private
 
+    module Routes
+      module_function
+
+      def photo_path(photo)
+        "/#{Photor.path(photo.taken_at, photo.filename.sub(/\.[a-z]*/, '.html'))}"
+      end
+
+      def tag_path(tag)
+        "/t/#{tag.name}"
+      end
+
+      def tag_index(tag)
+        File.join(tag_path(tag), 'index.html')
+      end
+
+      def year_index(year)
+        "/#{year}/index.html"
+      end
+    end
+    include Routes
+
+    module Views
+      module_function
+
+      def create(path, page, &block)
+        path = File.join(dir, path)
+        FileUtils.mkdir_p(File.dirname(path))
+        File.open(path, 'w') do |f|
+          f << render('layout', page: page, &block)
+        end
+      end
+
+      def render(name, kwargs, &block)
+        template(name).result(ERBBinding.new(kwargs).binding(&block))
+      end
+
+      def template(name)
+        ERB.new(File.read(File.join(VIEWDIR, name + '.html.erb')), nil, '<>')
+      end
+    end
+    include Views
+
     class ERBBinding
+      include Routes
+      include Views
+
       def initialize(args = {})
         args.each do |k, v|
           define_singleton_method(k){ v }
@@ -92,22 +137,6 @@ module Photor
       def binding
         super
       end
-    end
-
-    def create(path, page, &block)
-      path = File.join(dir, path)
-      FileUtils.mkdir_p(File.dirname(path))
-      File.open(path, 'w') do |f|
-        f << render('layout', page: page, &block)
-      end
-    end
-
-    def render(name, kwargs, &block)
-      template(name).result(ERBBinding.new(kwargs).binding(&block))
-    end
-
-    def template(name)
-      ERB.new(File.read(File.join(VIEWDIR, name + '.html.erb')), nil, '<>')
     end
   end
 end

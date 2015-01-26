@@ -1,7 +1,7 @@
 <ol class="photos">
   <% photos.each do |photo| %>
     <li class="photos__photo">
-      <a href="<%= photo.url %>">
+      <a href="<%= photo_path(photo) %>">
         <img src="/<%= Photor.path(photo.taken_at, photo.filename) %>" />
       </a>
     </li>
