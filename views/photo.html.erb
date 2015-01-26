@@ -1,0 +1,10 @@
+<div class="photo">
+  <img src="/<%= Photor.path(photo.taken_at, photo.filename) %>" />
+  <ul class="tags">
+    <% photo.tags.each do |tag| %>
+      <li class="tags__tag">
+        <a href="<%= tag_path(tag) %>"><%= tag.name %></a>
+      </li>
+    <% end %>
+  </ul>
+</div>

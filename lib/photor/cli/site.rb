@@ -25,6 +25,7 @@ module Photor
     def generate
       generate_root
       generate_years
+      generate_photos
       generate_tags
       copy_assets
     end
@@ -48,6 +49,14 @@ module Photor
             next unless photos.any?
             render('photos', photos: photos)
           end.join
+        end
+      end
+    end
+
+    def generate_photos
+      db.photos.all.each do |photo|
+        create photo_path(photo), Page.new(title: photo.filename) do
+          render 'photo', photo: photo
         end
       end
     end

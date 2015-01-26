@@ -6,6 +6,10 @@ class Photor::DB
     NAME = 'photos'
     COLUMNS = %w(id filename taken_at)
 
+    def all
+      select_all(Photo, "SELECT #{COLUMNS.join(', ')} FROM #{NAME} ORDER BY taken_at ASC")
+    end
+
     def find(filename, taken_at)
       select(Photo, "SELECT #{COLUMNS.join(', ')} FROM #{NAME} WHERE filename = ? AND taken_at = ?", filename, taken_at.to_i)
     end
