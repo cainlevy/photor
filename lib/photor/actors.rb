@@ -1,5 +1,5 @@
-require 'celluloid'
-Celluloid.task_class = Celluloid::TaskThread
+require 'celluloid/current'
+Celluloid.task_class = Celluloid::Task::Threaded
 Celluloid.logger = nil
 
 module Photor
