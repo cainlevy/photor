@@ -23,9 +23,9 @@ PLATFORMS
 
 DEPENDENCIES
   aws-sdk
-  celluloid
+  celluloid (~> 0.16.0)
   sqlite3
   thor
 
 BUNDLED WITH
-   1.13.7
+   1.14.6
