@@ -32,7 +32,7 @@ class PhotorTest < MiniTest::Test
   end
 end
 
-class Photor::ExifTest < MiniTest::Unit::TestCase
+class Photor::ExifTest < Minitest::Test
   include PhotorFixturesHelper
 
   def test_array_accessors
