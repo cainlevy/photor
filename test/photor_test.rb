@@ -57,3 +57,28 @@ class Photor::ExifTest < Minitest::Test
     end
   end
 end
+
+class Photor::MediaTest < Minitest::Test
+  def test_time_from_name
+    [
+      '2020-01-01_12-34-56.jpg',
+      '20200101_123456.jpg',
+      '20200101123456.jpg',
+      'img_20200101_123456-o.jpg'
+    ].each do |name|
+      media = Photor::Media.new(name)
+      assert_equal Time.parse('2020-01-01 12:34:56'), media.taken_at
+    end
+
+    [
+      '99999999_999999.jpg'
+    ].each do |name|
+      begin
+        Photor::Media.new(name).taken_at
+        refute true
+      rescue Photor::TimeFormatError
+        assert true
+      end
+    end
+  end
+end

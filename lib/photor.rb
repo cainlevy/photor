@@ -5,6 +5,12 @@ require 'shellwords'
 require_relative 'photor/jpeg'
 
 module Photor
+  class TimeFormatError < StandardError
+    def initialize(time)
+      super "unknown time format: #{time}"
+    end
+  end
+
   def self.each_jpeg(dir, options = {}, &block)
     return to_enum(:each_jpeg, dir, options) unless block_given?
 

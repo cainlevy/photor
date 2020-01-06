@@ -38,12 +38,12 @@ module Photor
     end
 
     def self.exif_time(str)
-      return nil if str.nil? or str.empty?
+      return nil if str.nil? or str.empty? or str == '0000:00:00 00:00:00'
       t = Time.parse(str) rescue nil
       t ||= if md = str.match(/^(\d{4}):(\d\d):(\d\d) (\d\d):(\d\d):(\d\d)$/)
         Time.mktime($1.to_i, $2.to_i, $3.to_i, $4.to_i, $5.to_i, $6.to_i) rescue nil
       end
-      t || raise("unknown time format: #{str}")
+      t || raise(Photor::TimeFormatError, str)
     end
   end
 end

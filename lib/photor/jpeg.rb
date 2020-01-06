@@ -6,7 +6,7 @@ module Photor
     FINGERPRINT_LENGTH = 24
 
     def taken_at
-      exif.date_time || mtime
+      exif.date_time || super
     end
 
     def extension

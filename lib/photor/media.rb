@@ -37,5 +37,31 @@ module Photor
     def ==(other)
       self.size == other.size && self.md5 == other.md5
     end
+
+    def taken_at
+      time_from_name || raise(Photor::TimeFormatError, name)
+    end
+
+    def time_from_name
+      md = name.match(/
+        (\A|[^\d])
+        (?<yr>\d{4})
+        [^\d]?
+        (?<mon>\d{2})
+        [^\d]?
+        (?<day>\d{2})
+        [^\d]?
+        (?<hr>\d{2})
+        [^\d]?
+        (?<min>\d{2})
+        [^\d]?
+        (?<sec>\d{2})
+        [^\d]
+      /x)
+
+      md && Time.parse("#{md[:yr]}#{md[:mon]}#{md[:day]} #{md[:hr]}#{md[:min]}#{md[:sec]}")
+    rescue ArgumentError
+      nil
+    end
   end
 end
