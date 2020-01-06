@@ -14,7 +14,7 @@ module Photor
   def self.each_jpeg(dir, options = {}, &block)
     return to_enum(:each_jpeg, dir, options) unless block_given?
 
-    Dir.glob(File.join(dir, '**', '*.{jpg,jpeg,JPG,JPEG}')).each do |o_path|
+    Dir.glob(File.join(dir, '**', '*.{jpg,jpeg}'), File::FNM_CASEFOLD).each do |o_path|
       jpg = Photor::JPEG.new(o_path)
       yield jpg unless options[:since] && jpg.mtime < options[:since]
     end
