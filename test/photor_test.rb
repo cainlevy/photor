@@ -21,13 +21,13 @@ class PhotorTest < MiniTest::Test
     older = img('older.jpg').tap{|path| `touch -t201410301234 #{path}` }
     newer = img('newer.jpg')
 
-    jpgs = Photor.each_jpeg(photos_path, since: '2014-11-01').to_a
+    jpgs = Photor.each_jpeg(photos_path, since: Time.parse('2014-11-01')).to_a
     assert_equal [newer], jpgs.map(&:path).sort
 
-    jpgs = Photor.each_jpeg(photos_path, since: '2014-01-01').to_a
+    jpgs = Photor.each_jpeg(photos_path, since: Time.parse('2014-01-01')).to_a
     assert_equal [older, newer].sort, jpgs.map(&:path).sort
 
-    jpgs = Photor.each_jpeg(photos_path, since: '2014-10-30').to_a
+    jpgs = Photor.each_jpeg(photos_path, since: Time.parse('2014-10-30')).to_a
     assert_equal [older, newer].sort, jpgs.map(&:path).sort
   end
 end
