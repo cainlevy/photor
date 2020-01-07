@@ -16,7 +16,9 @@ class Photor::CLI < Thor
     puts "scanning:"
     Photor.each_jpeg(folder) do |jpg|
       print "."
-      if jpg.name.match(/^\d{14}-[0-9a-f]{#{Photor::JPEG::FINGERPRINT_LENGTH}}\.[a-z]*$/)
+      if !jpg.taken_at
+        skipped += 1
+      elsif jpg.name.match(/^\d{14}-[0-9a-f]{#{Photor::JPEG::FINGERPRINT_LENGTH}}\.[a-z]*$/)
         skipped += 1
       else
         renamed += 1

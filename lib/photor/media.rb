@@ -39,7 +39,7 @@ module Photor
     end
 
     def taken_at
-      time_from_name || raise(Photor::TimeFormatError, name)
+      time_from_name
     end
 
     def time_from_name

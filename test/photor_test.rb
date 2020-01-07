@@ -73,12 +73,7 @@ class Photor::MediaTest < Minitest::Test
     [
       '99999999_999999.jpg'
     ].each do |name|
-      begin
-        Photor::Media.new(name).taken_at
-        refute true
-      rescue Photor::TimeFormatError
-        assert true
-      end
+      refute Photor::Media.new(name).taken_at
     end
   end
 end
