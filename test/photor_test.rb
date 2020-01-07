@@ -3,6 +3,18 @@ require_relative 'test_helper'
 class PhotorTest < MiniTest::Test
   include PhotorFixturesHelper
 
+  def test_method_each_file
+    expected = []
+    expected << img('foo.jpg')
+    expected << mov('a/bar.mp4')
+    expected << img('foo.gif')
+    img('foo.png')
+
+    files = Photor.each_file(photos_path, extensions: %w[jpg mp4 gif]).to_a
+    assert_equal expected.sort, files.map(&:path).sort
+    assert_equal [Photor::JPEG, Photor::Media], files.map(&:class).uniq
+  end
+
   def test_method_each_jpeg
     expected = []
     expected << img('foo.jpg')

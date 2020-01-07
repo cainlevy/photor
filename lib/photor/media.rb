@@ -1,5 +1,7 @@
 module Photor
   class Media
+    FINGERPRINT_LENGTH = 24
+
     attr_reader :path
 
     def self.find(path)
@@ -7,6 +9,14 @@ module Photor
         new(path)
       else
         nil
+      end
+    end
+
+    def self.from(path)
+      if %[.jpg .jpeg].include?(File.extname(path).downcase)
+        Photor::JPEG.new(path)
+      else
+        new(path)
       end
     end
 
@@ -38,11 +48,15 @@ module Photor
       self.size == other.size && self.md5 == other.md5
     end
 
+    def unique_name
+      @unique_name ||= "#{taken_at.strftime "%Y%m%d%H%M%S"}-#{md5[0, FINGERPRINT_LENGTH]}#{extension}"
+    end
+
     def taken_at
       time_from_name
     end
 
-    def time_from_name
+    private def time_from_name
       md = name.match(/
         (\A|[^\d])
         (?<yr>(19|20)\d\d)

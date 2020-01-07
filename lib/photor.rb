@@ -11,12 +11,18 @@ module Photor
     end
   end
 
-  def self.each_jpeg(dir, options = {}, &block)
-    return to_enum(:each_jpeg, dir, options) unless block_given?
+  def self.each_jpeg(dir, since: nil, &block)
+    each_file(dir, since: since, extensions: %w[jpg jpeg], &block)
+  end
 
-    Dir.glob(File.join(dir, '**', '*.{jpg,jpeg}'), File::FNM_CASEFOLD).each do |o_path|
-      jpg = Photor::JPEG.new(o_path)
-      yield jpg unless options[:since] && jpg.mtime < options[:since]
+  def self.each_file(dir, since: nil, extensions: %w[jpg jpeg mp4 mov])
+    return to_enum(:each_file, dir, since: since, extensions: extensions) unless block_given?
+
+    Dir.glob(File.join(dir, '**', "*.{#{extensions.join(',')}}"), File::FNM_CASEFOLD).each do |o_path|
+      media = Photor::Media.from(o_path)
+      next if since && media.mtime < since
+
+      yield media
     end
   end
 

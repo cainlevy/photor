@@ -2,31 +2,29 @@ require 'thor'
 
 class Photor::CLI < Thor
   desc "rename [FOLDER]",
-    "renames all photos in FOLDER with unique names"
+    "standardizes naming for all media in FOLDER"
   long_desc <<-DESC
-    Renames every JPG in FOLDER with the unique name pattern
-    employed by the `copy' command. Meant to convert an existing
-    gallery to the new naming convention.
+    Renames every JPG, MOV, or MP4 in FOLDER with the standardized name pattern.
   DESC
-  method_option :dry_run, :type => :boolean, :desc => "report actions that would be taken without performing them"
+  method_option :dry_run, type: :boolean, desc: "report actions that would be taken without performing them"
   def rename(folder)
     renamed = 0
     skipped = 0
 
     puts "scanning:"
-    Photor.each_jpeg(folder) do |jpg|
+    Photor.each_file(folder) do |f|
       print "."
-      if !jpg.taken_at
+      if !f.taken_at
         skipped += 1
-      elsif jpg.name.match(/^\d{14}-[0-9a-f]{#{Photor::JPEG::FINGERPRINT_LENGTH}}\.[a-z]*$/)
+      elsif f.name.match(/^\d{14}-[0-9a-f]{#{Photor::JPEG::FINGERPRINT_LENGTH}}\.[a-z]*$/)
         skipped += 1
       else
         renamed += 1
-        new_path = jpg.path.sub(jpg.name, jpg.unique_name)
+        new_path = f.path.sub(f.name, f.unique_name)
         if options[:dry_run]
-          puts "#{jpg.path} -> #{new_path}"
+          puts "#{f.path} -> #{new_path}"
         else
-          FileUtils.mv(jpg.path, new_path)
+          FileUtils.mv(f.path, new_path)
         end
       end
     end
