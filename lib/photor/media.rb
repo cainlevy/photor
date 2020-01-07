@@ -45,18 +45,18 @@ module Photor
     def time_from_name
       md = name.match(/
         (\A|[^\d])
-        (?<yr>\d{4})
+        (?<yr>(19|20)\d\d)
         [^\d]?
-        (?<mon>\d{2})
+        (?<mon>[0-1]\d)
         [^\d]?
-        (?<day>\d{2})
+        (?<day>[0-3]\d)
         [^\d]?
-        (?<hr>\d{2})
+        (?<hr>[0-2]\d)
         [^\d]?
-        (?<min>\d{2})
+        (?<min>[0-5]\d)
         [^\d]?
-        (?<sec>\d{2})
-        [^\d]
+        (?<sec>[0-5]\d)
+        [^\d]?
       /x)
 
       md && Time.parse("#{md[:yr]}#{md[:mon]}#{md[:day]} #{md[:hr]}#{md[:min]}#{md[:sec]}")

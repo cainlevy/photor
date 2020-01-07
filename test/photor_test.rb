@@ -67,7 +67,7 @@ class Photor::MediaTest < Minitest::Test
       'img_20200101_123456-o.jpg'
     ].each do |name|
       media = Photor::Media.new(name)
-      assert_equal Time.parse('2020-01-01 12:34:56'), media.taken_at
+      assert_equal Time.parse('2020-01-01 12:34:56'), media.taken_at, name
     end
 
     [
